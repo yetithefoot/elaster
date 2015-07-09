@@ -140,9 +140,11 @@ function close() {
 	}
 }
 
-function exporter(config, collections) {
+function exporter(config) {
 	db = require('./db')(config);
 	elastic = require('./elastic')(config);
+	
+	var collections = config.collections;
 	var exports = collections.map(function (c) {
 		return function (callback) {
 			exportCollection(c, callback);

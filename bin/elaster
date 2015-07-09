@@ -1,7 +1,0 @@
-#!/usr/bin/env node
-var elaster = require('../source/elaster');
-var config = require('../config');
-
-//process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
-
-elaster.run(config.collections);

@@ -2,12 +2,9 @@ var _ = require('underscore');
 var moment = require('moment');
 var async = require('async');
 var config = require('../config');
-
-var db = require('./db')(config);
-var elastic = require('./elastic')(config);
-
 var through = require('through');
 var single = require('single-line-log');
+var db, elastic;
 
 require('colors');
 
@@ -144,7 +141,9 @@ function close() {
 	}
 }
 
-function exporter(collections) {
+function exporter(config, collections) {
+	db = require('./db')(config);
+	elastic = require('./elastic')(config);
 	var exports = collections.map(function (c) {
 		return function (callback) {
 			exportCollection(c, callback);

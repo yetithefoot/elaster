@@ -3,7 +3,11 @@ var moment = require('moment');
 var async = require('async');
 var through = require('through');
 var single = require('single-line-log');
+var highland = require('highland');
 var db, elastic;
+var options = {
+	simultaneousOperations: 1000
+};
 
 require('colors');
 
@@ -69,6 +73,7 @@ function exportCollection(desc, callback) {
 			console.log('----> streaming collection to elastic');
 
 			var takeFields = through(function (item) {
+				console.log('tf');
 				if (desc.fields) {
 					item = _.pick(item, desc.fields);
 				}
@@ -76,39 +81,63 @@ function exportCollection(desc, callback) {
 				this.queue(item);
 			});
 
+			var nextItem = through(function(item) {
+				this.queue(item);
+			});
+
 			var postToElastic = through(function (item) {
 				var me = this;
-
+				var bulkBody = [];
+				
 				me.pause();
 
-				elastic.create({
-					index: desc.index,
-					type: desc.type,
-					id: item._id.toString(),
-					body: item
-				}, function (err) {
+				for (i = 0; i < item.length; i++){
+					bulkBody.push({
+						index: {
+							_index: desc.index,
+							_type: desc.type,
+							_id: item[i]._id.toString()
+						}
+					});
+					delete item[i]._id;
+					bulkBody.push(item[i]);
+				}
+				//console.log(item.length);
+				//console.dir(bulkBody);
+				// me.queue(item.length);
+				// me.resume();
+
+				elastic.bulk({
+					body: bulkBody
+				}, function (err, resp) {
 					if (err) {
-						console.error(('failed to create document in elastic.').bold.red);
+						//console.error(('response timeout or failed to connect.').bold.red);
+						console.dir(err);
 						return next(err);
 					}
+					if (resp.errors){
+						console.error(('failed to create a document in elastic.').bold.red);
+						return next(resp);
+					}
 
-					me.queue(item);
+					me.queue(item.length);
 					me.resume();
 				});
 			});
 
 			var progress = function () {
 				var count = 0;
-				return through(function () {
-					var percentage = Math.floor(100 * ++count / total);
+				return through(function (length) {
+					count += length;
+					var percentage = Math.floor(100 * count / total);
 					single(('------> processed ' + count + ' documents [' + percentage + '%]').magenta);
 				});
 			};
 
-			var stream = collection
-				.find(query)
-				.sort({_id: 1})
-				.pipe(takeFields)
+			var cursor = collection.find(query).sort({_id: 1});
+
+			var stream = highland(cursor)
+				.batch(options.simultaneousOperations)
 				.pipe(postToElastic)
 				.pipe(progress());
 
@@ -133,6 +162,7 @@ function exportCollection(desc, callback) {
 }
 
 function close() {
+	debugger;
 	async.each([db, elastic], _close);
 
 	function _close(conn, callback) {

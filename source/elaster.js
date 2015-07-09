@@ -1,7 +1,6 @@
 var _ = require('underscore');
 var moment = require('moment');
 var async = require('async');
-var config = require('../config');
 var through = require('through');
 var single = require('single-line-log');
 var db, elastic;

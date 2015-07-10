@@ -15,7 +15,7 @@ function format(duration) {
 	return duration.hours() + ':' + duration.minutes() + ':' + duration.seconds() + ':' + duration.milliseconds();
 }
 
-function exportCollection(desc, callback) {
+function exportCollection(desc, settings, callback) {
 	var collection = db[desc.name];
 	var query = desc.query || {};
 
@@ -48,6 +48,25 @@ function exportCollection(desc, callback) {
 			});
 		},
 		function (next) {
+			console.log('----> close index connection[' + desc.index + ']');
+			elastic.indices.close({index: desc.index}, function (err) {
+
+				next(err);
+			});
+		},
+		function (next) {
+			console.log('----> initialize index settings');
+
+			if (!settings) {
+				return next();
+			}
+			console.log({index: desc.index, body: settings});
+			elastic.indices.putSettings({index: desc.index, body: settings}, function (err, resp) {
+				console.dir(resp);
+				next(err);
+			});
+		},
+		function (next) {
 			console.log('----> initialize index mapping');
 
 			if (!desc.mappings) {
@@ -55,6 +74,12 @@ function exportCollection(desc, callback) {
 			}
 
 			elastic.indices.putMapping({index: desc.index, type: desc.type, body: desc.mappings }, function (err) {
+				next(err);
+			});
+		},
+		function (next) {
+			console.log('----> open index connection[' + desc.index + ']');
+			elastic.indices.open({index: desc.index}, function (err) {
 				next(err);
 			});
 		},
@@ -162,7 +187,6 @@ function exportCollection(desc, callback) {
 }
 
 function close() {
-	debugger;
 	async.each([db, elastic], _close);
 
 	function _close(conn, callback) {
@@ -177,7 +201,7 @@ function exporter(config) {
 	var collections = config.collections;
 	var exports = collections.map(function (c) {
 		return function (callback) {
-			exportCollection(c, callback);
+			exportCollection(c, config.settings, callback);
 		};
 	});
 

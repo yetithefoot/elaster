@@ -1,4 +1,4 @@
-# Elaster
+# Mongo_to_ES
 
 MongoDB collection to Elastic Search index exporter.
 
@@ -6,65 +6,95 @@ MongoDB collection to Elastic Search index exporter.
 
 Clone the repo,
 
-```bash
-$ git clone https://github.com/likeastore/elaster
-$ cd elaster
 ```
-
-Edit config file `config/index.js`,
-
-```js
-module.exports = {
+npm install mongo_to_es
+```
+var elaster = require('./index.js');
+elaster.run({
 	mongo: {
-		connection: 'mongodb://localhost:27017/exampledb'
+		connection: 'mongodb://localhost:27017/picsio_dev'
 	},
 
 	elastic: {
-		connection: 'http://localhost:9200'
+		host: {
+			host: 'localhost',
+			port: 9200
+		},
+
+		requestTimeout: 5000
 	},
 
-	collections: {
-		// collections to export
-	}
-};
-
-```
-
-In `collections` configuration section you can setup which collections to export, which mappings to use, e.g.,
-
-```js
-collections: [{
-		name: 'items',
-		index: 'items',
-		type: 'item'
-		fields: ['_id', 'title', 'description', 'user', 'date'],
-		mapping: {
-			// Elastic Seach mapping
+	settings: {
+		"analysis": {
+			"analyzer": {
+				"generic_name_analyzer": {
+					"type": "custom",
+					"tokenizer": "icu_tokenizer",
+					"filter": [
+						"word_split",
+						"icu_folding",
+						"english_stop"
+					]
+				},
+				"trigram_name_analyzer": {
+					"type": "custom",
+					"tokenizer": "icu_tokenizer",
+					"filter": [
+						"icu_folding",
+						"english_stop",
+						"trigram_filter"
+					]
+				}
+			},
+			"filter": {
+				"word_split": {
+					"type": "word_delimiter",
+					"preserve_original": 1
+				},
+				"english_stop": {
+					"type": "stop",
+					"stopwords": "_english_"
+				},
+				"trigram_filter": {
+					"type": "ngram",
+					"min_gram": 3,
+					"max_gram": 3
+				}
+			}
 		}
-	}, {
-		name: 'users',
-		index: 'users',
-		type: 'user'
-		fields: ['_id', 'email', 'created', 'bio', 'address']
-	}
-]
-```
+	},
 
-The `mapping` is optional field, if it's missing when Elastic Seach default mapping is used.
+	collections: [{
+		name: 'images',
+		index: 'images',
+		type: 'image',
+		mappings: {
+			"image": {
+				"properties": {
+					"name": {
+						"type": "multi_field",
+						"fields": {
+							"name": {
+								"type": "string",
+								"analyzer": "generic_name_analyzer"
+							},
+							"trigram": {
+								"type": "string",
+								"analyzer": "trigram_name_analyzer"
+							}
+						}
+					}
+				}
+			}
+		}
+	}]
+});
 
-Once, config file is updated run exporter,
 
-```bash
-$ bin/elaster
-```
-
-Output,
-
-[![](https://lh6.googleusercontent.com/--if-zsLG3uk/U2Ihtad8p4I/AAAAAAAAcRA/pg4xpTrcmGg/w2236-h800-no/Screenshot+2014-05-01+13.23.26.png)](https://github.com/likeastore/elaster)
 
 ## Licence (MIT)
 
-Copyright (c) 2014, Likeastore.com info@likeastore.com
+Copyright (c) 2015, myzlio@gmail.com
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 

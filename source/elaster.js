@@ -60,7 +60,6 @@ function exportCollection(desc, settings, callback) {
 			if (!settings) {
 				return next();
 			}
-			console.log({index: desc.index, body: settings});
 			elastic.indices.putSettings({index: desc.index, body: settings}, function (err, resp) {
 				next(err);
 			});

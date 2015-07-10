@@ -9,6 +9,9 @@ Clone the repo,
 ```
 npm install mongo_to_es
 ```
+
+## How to run
+```
 var elaster = require('./index.js');
 elaster.run({
 	mongo: {

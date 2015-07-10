@@ -95,23 +95,18 @@ function exportCollection(desc, settings, callback) {
 		function (total, next) {
 			console.log('----> streaming collection to elastic');
 
-			var takeFields = through(function (item) {
-				console.log('tf');
-				if (desc.fields) {
-					item = _.pick(item, desc.fields);
-				}
-
-				this.queue(item);
-			});
-
-			var nextItem = through(function(item) {
-				this.queue(item);
+			var takeFields = through(function (items) {
+				this.queue(_.map(items, function(item){
+					if (desc.fields) {
+						item = _.pick(item, desc.fields);
+					}
+					return item;
+				}));
 			});
 
 			var postToElastic = through(function (item) {
 				var me = this;
 				var bulkBody = [];
-				
 				me.pause();
 
 				for (i = 0; i < item.length; i++){
@@ -161,6 +156,7 @@ function exportCollection(desc, settings, callback) {
 
 			var stream = highland(cursor)
 				.batch(options.simultaneousOperations)
+				.pipe(takeFields)
 				.pipe(postToElastic)
 				.pipe(progress());
 

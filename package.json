@@ -1,6 +1,6 @@
 {
   "name": "mongo_to_es",
-  "version": "0.0.13",
+  "version": "0.0.14",
   "description": "Export collections from MongoDB to Elasticsearch",
   "main": "index.js",
   "scripts": {

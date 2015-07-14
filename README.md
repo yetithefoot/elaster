@@ -15,7 +15,7 @@ npm install mongo_to_es
 var elaster = require('./index.js');
 elaster.run({
 	mongo: {
-		connection: 'mongodb://localhost:27017/picsio_dev'
+		connection: 'mongodb://localhost:27017/base'
 	},
 
 	elastic: {
@@ -93,7 +93,7 @@ elaster.run({
 	}]
 });
 
-
+```
 
 ## Licence (MIT)
 

@@ -47,10 +47,12 @@ function exportCollection(desc, settings, callback) {
 				next(err);
 			});
 		},
+		function(next){
+			setTimeout(next.bind(this, null), 1000);
+		},
 		function (next) {
 			console.log('----> close index connection[' + desc.index + ']');
 			elastic.indices.close({index: desc.index}, function (err) {
-
 				next(err);
 			});
 		},

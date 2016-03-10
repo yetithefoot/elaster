@@ -16,6 +16,7 @@ function format(duration) {
 }
 
 function exportCollection(desc, settings, callback) {
+
 	var collection = db[desc.name];
 	var query = desc.query || {};
 
@@ -96,11 +97,23 @@ function exportCollection(desc, settings, callback) {
 		},
 		function (total, next) {
 			console.log('----> streaming collection to elastic');
-
+			if(desc.preformers) {
+				console.log(`-----> preformers run for fileds: ${_.keys(desc.preformers)}`);
+			}
 			var takeFields = through(function (items) {
+
 				this.queue(_.map(items, function(item){
 					if (desc.fields) {
 						item = _.pick(item, desc.fields);
+					}
+
+					// if there is preformers (pre index transformer) for field run it
+					// cases: sometimes before indexing we need to transform initial value somehow
+					if(desc.preformers) {
+						for(var field in desc.preformers){
+							var fn = desc.preformers[field];
+							item[field] = desc.preformers[field](item[field]);
+						}
 					}
 					return item;
 				}));

@@ -1,4 +1,4 @@
-# Mongo_to_ES
+# MongoDB to ES indexer
 
 MongoDB collection to Elastic Search index exporter.
 
@@ -89,11 +89,38 @@ elaster.run({
 					}
 				}
 			}
-		}
+		},
+		fields: ['_id',
+				'name',
+				'title',
+				'description',
+				'flag',
+				'rating',
+				'color',
+				'meta',
+				'customMeta',
+				'user',
+				'keywords',
+				'fileExtension',
+				'mimeType',
+				'tags'],
+		preformers: {
+			"tags": tags => {
+				return tags.map(tag => {
+					return tag.path.split('/').pop()
+				});
+			}
+		},
 	}]
 });
 
 ```
+
+Preformers:
+---
+
+NOTE: this property is not functionality of elasticsearch! Before sending to indexing we can prepare/sanitize/transform original document fileds somehow. ```preformers``` object contains functions stored by keys. Each document field will be transformed by related preformer. In example above object field tag {path:'/root/path1/path2'} will be transformed to string 'path2'. 
+
 
 ## Licence (MIT)
 

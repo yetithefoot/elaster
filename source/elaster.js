@@ -111,8 +111,10 @@ function exportCollection(desc, settings, callback) {
 					// cases: sometimes before indexing we need to transform initial value somehow
 					if(desc.preformers) {
 						for(var field in desc.preformers){
-							var fn = desc.preformers[field];
-							item[field] = desc.preformers[field](item[field]);
+							if(item[field]){
+								var fn = desc.preformers[field];
+								item[field] = fn(item[field]);
+						}
 						}
 					}
 					return item;

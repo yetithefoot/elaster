@@ -98,7 +98,7 @@ function exportCollection(desc, settings, callback) {
 		function (total, next) {
 			console.log('----> streaming collection to elastic');
 			if(desc.preformers) {
-				console.log(`-----> preformers run for fileds: ${_.keys(desc.preformers)}`);
+				console.log(`-----> preformers run for fields: ${_.keys(desc.preformers)}`);
 			}
 			var takeFields = through(function (items) {
 
@@ -114,7 +114,7 @@ function exportCollection(desc, settings, callback) {
 							if(item[field]){
 								var fn = desc.preformers[field];
 								item[field] = fn(item[field]);
-						}
+							}
 						}
 					}
 					return item;

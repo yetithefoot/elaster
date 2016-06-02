@@ -1,6 +1,6 @@
 {
-  "name": "mongo_to_es",
-  "version": "0.0.18",
+  "name": "elaster",
+  "version": "0.0.19",
   "description": "Export collections from MongoDB to Elasticsearch",
   "main": "index.js",
   "scripts": {
@@ -14,7 +14,7 @@
     "export",
     "mapping"
   ],
-  "author": "myzlio@gmail.com",
+  "contributors": ["myzlio@gmail.com", "reg.yeti@gmail.com"],
   "license": "MIT",
   "dependencies": {
     "async": "~0.8.0",

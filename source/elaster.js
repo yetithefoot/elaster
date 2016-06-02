@@ -29,80 +29,103 @@ function exportCollection(desc, settings, callback) {
 	var started = moment();
 
 	async.waterfall([
-		function (next) {
+		next => { 
 			console.log('----> checking connection to elastic');
-			elastic.ping({requestTimeout: 1000}, function (err) {
-				next(err);
-			});
+			elastic.ping(
+				{ requestTimeout: 1000 },
+				err => {
+					next(err);
+				}
+			);
 		},
-		function (next) {
+		next => {
 			console.log('----> dropping existing index [' + desc.index + ']');
-			elastic.indices.delete({index: desc.index}, function (err) {
-				var indexMissing = err && err.message.indexOf('IndexMissingException') === 0;
-				next(indexMissing ? null : err);
-			});
+			elastic.indices.delete(
+				{ index: desc.index },
+				err => {
+					var indexMissing = err && err.message.indexOf('IndexMissingException') === 0;
+					next(indexMissing ? null : err);
+				}
+			);
 		},
-		function (next) {
+		next => {
 			console.log('----> creating new index [' + desc.index + ']');
-			elastic.indices.create({index: desc.index}, function (err) {
-				next(err);
-			});
+			elastic.indices.create(
+				{ index: desc.index },
+				err => {
+					next(err);
+				}
+			);
 		},
-		function(next){
+		next => {
 			setTimeout(next.bind(this, null), 1000);
 		},
-		function (next) {
+		next => {
 			console.log('----> close index connection[' + desc.index + ']');
-			elastic.indices.close({index: desc.index}, function (err) {
-				next(err);
-			});
+			elastic.indices.close(
+				{ index: desc.index },
+				err => {
+					next(err);
+				}
+			);
 		},
-		function (next) {
+		next => {
 			console.log('----> initialize index settings');
 
 			if (!settings) {
 				return next();
 			}
-			elastic.indices.putSettings({index: desc.index, body: settings}, function (err, resp) {
-				next(err);
-			});
+			elastic.indices.putSettings(
+				{index: desc.index, body: settings},
+				(err, resp) => {
+					next(err);
+				}
+			);
 		},
-		function (next) {
+		next => {
 			console.log('----> initialize index mapping');
 
 			if (!desc.mappings) {
 				return next();
 			}
 
-			elastic.indices.putMapping({index: desc.index, type: desc.type, body: desc.mappings }, function (err) {
-				next(err);
-			});
-		},
-		function (next) {
-			console.log('----> open index connection[' + desc.index + ']');
-			elastic.indices.open({index: desc.index}, function (err) {
-				next(err);
-			});
-		},
-		function (next) {
-			console.log('----> analizing collection [' + desc.name + ']');
-			collection.count(query, function (err, total) {
-				if (err) {
-					return next(err);
+			elastic.indices.putMapping(
+				{index: desc.index, type: desc.type, body: desc.mappings },
+				err => {
+					next(err);
 				}
-
-				console.log('----> find ' + total + ' documentents to export');
-				next(null, total);
-			});
+			);
 		},
-		function (total, next) {
+		next => {
+			console.log('----> open index connection[' + desc.index + ']');
+			elastic.indices.open(
+				{index: desc.index},
+				err => {
+					next(err);
+				}
+			);
+		},
+		next => {
+			console.log('----> analizing collection [' + desc.name + ']');
+			collection.count(query,
+				(err, total) => {
+					if (err) {
+						return next(err);
+					}
+
+					console.log('----> find ' + total + ' documentents to export');
+					next(null, total);
+				}
+			);
+		},
+		(total, next) => {
 			console.log('----> streaming collection to elastic');
 			if(desc.preformers) {
 				console.log(`-----> preformers run for fields: ${_.keys(desc.preformers)}`);
 			}
-			var takeFields = through(function (items) {
+			var takeFields = through(items => {
 
-				this.queue(_.map(items, function(item){
+				this.queue(_.map(items, item => {
 					if (desc.fields) {
 						item = _.pick(item, desc.fields);
 					}

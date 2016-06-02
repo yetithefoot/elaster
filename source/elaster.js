@@ -123,7 +123,7 @@ function exportCollection(desc, settings, callback) {
 			if(desc.preformers) {
 				console.log(`-----> preformers run for fields: ${_.keys(desc.preformers)}`);
 			}
-			var takeFields = through(items => {
+			var takeFields = through(function(items) {
 
 				this.queue(_.map(items, item => {
 					if (desc.fields) {

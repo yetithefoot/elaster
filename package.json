@@ -1,6 +1,6 @@
 {
   "name": "elaster",
-  "version": "0.0.20",
+  "version": "0.0.21",
   "description": "Export collections from MongoDB to Elasticsearch",
   "main": "index.js",
   "scripts": {
@@ -22,7 +22,7 @@
     "elasticsearch": "~10.0.1",
     "highland": "^2.5.1",
     "moment": "~2.6.0",
-    "mongojs": "~0.13.0",
+    "mongojs": "~2.4.0",
     "request": "~2.34.0",
     "single-line-log": "~0.3.1",
     "through": "~2.3.4",

@@ -5,5 +5,5 @@ module.exports = function (config) {
 		return c.name;
 	});
 
-	return mongo.connect(config.mongo.connection, collections);
+	return mongo(config.mongo.connection, collections);
 };

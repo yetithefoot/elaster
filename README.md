@@ -26,6 +26,9 @@ elaster.run({
 
 		requestTimeout: 5000
 	},
+	options: {
+		setAlias: 'myNewAlias' // set this alias to collection
+	},
 
 	settings: {
 		"analysis": {

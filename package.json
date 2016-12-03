@@ -1,6 +1,6 @@
 {
   "name": "elaster",
-  "version": "0.0.22",
+  "version": "0.0.23",
   "private": true,
   "description": "Exports collections from MongoDB to Elasticsearch",
   "main": "index.js",
@@ -15,7 +15,10 @@
     "export",
     "mapping"
   ],
-  "contributors": ["myzlio@gmail.com", "reg.yeti@gmail.com"],
+  "contributors": [
+    "myzlio@gmail.com",
+    "reg.yeti@gmail.com"
+  ],
   "license": "MIT",
   "dependencies": {
     "async": "~0.8.0",

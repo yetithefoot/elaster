@@ -145,7 +145,7 @@ function exportCollection(desc, settings, options = { }, callback) {
 			});
 
 			const postToElastic = through(function (item) {
-				
+
 				const bulkBody = [];
 				this.pause();
 
@@ -166,12 +166,17 @@ function exportCollection(desc, settings, options = { }, callback) {
 				}, (err, resp) => {
 					if (err) {
 						//console.error(('response timeout or failed to connect.').bold.red);
-						console.dir(err);
-						return next(err);
+						console.error(('failed to create a document in elastic. err').bold.red, JSON.stringify(err));
+						//return next(err);
+						// this.resume();
 					}
 					if (resp.errors){
-						console.error(('failed to create a document in elastic.').bold.red);
-						return next(resp);
+						try {
+						const errors = resp.items.filter(item => (item.index.status >= 300 || item.index.status < 200) || item.index.error);
+						console.error(('failed to create a document in elastic. resp').bold.red, JSON.stringify(errors));
+					}catch(err){}
+						//return next(resp);
+						// this.resume();
 					}
 
 					this.queue(item.length);
